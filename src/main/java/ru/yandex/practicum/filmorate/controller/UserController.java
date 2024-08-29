@@ -18,6 +18,7 @@ public class UserController {
 
     @GetMapping
     public Collection<User> getAll() {
+        log.info("GET /users request is processed");
         return users.values();
     }
 
@@ -32,12 +33,12 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User updUser) {
-
         if (users.containsKey(updUser.getId())) {
             users.replace(updUser.getId(), updUser);
             log.info("User {} is updated: {}", updUser.getLogin(), updUser);
         } else {
-            throw new NotFoundException("User is not found");
+            throw new NotFoundException("User is not found",
+                    new Throwable("User ID: %d ;" + updUser.getId()).fillInStackTrace());
         }
         return updUser;
     }
@@ -51,7 +52,7 @@ public class UserController {
     }
 
     private String getDisplayedName(User user) {
-        return user.getName() != null && !user.getName().isEmpty() ? user.getName() : user.getLogin();
+        return user.getName() != null && !user.getName().isBlank() ? user.getName() : user.getLogin();
     }
 
 }

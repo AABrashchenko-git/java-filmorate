@@ -18,6 +18,7 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> getAll() {
+        log.info("GET /films request is processed");
         return films.values();
     }
 
@@ -35,7 +36,8 @@ public class FilmController {
             films.replace(updFilm.getId(), updFilm);
             log.info("Film {} is updated: {}", updFilm.getName(), updFilm);
         } else {
-            throw new NotFoundException("Film is not found");
+            throw new NotFoundException("Film is not found",
+                    new Throwable("Film ID: %d ;" + updFilm.getId()).fillInStackTrace());
         }
         return updFilm;
     }
