@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.model.Film;
+
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -18,18 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * Вот тут возникла такая вещь, что из-за того, что я отдал всю обработку валидации на откуп Спрингу,
- * и в самих контроллерах ничего не обрабатываю, то если прямо создавать экземпляр
- * FilmController controller = new Controller(), а затем в него добавлять невалидные фильмы
- * controller.add(invalidFilmInstance), то они все равно
- * будут добавляться. Пришлось гуглить дальше)) нашел инфу о @WebMvcTest, попробовал реализовать
- * Опять же, не знаю, насколько корректен такой подход в рамках этого ТЗ, но в рамках отношений
- * клиент-сервер всё работает. Если нужно ограничиться "примитивной" валидацией - переделаю
- * во второй итерации, пока решил оставить так, интересно твое мнение
- */
-
-@WebMvcTest(FilmController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FilmControllerTest {
     @Autowired

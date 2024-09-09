@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.validator.ValidReleaseDate;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder(toBuilder = true)
@@ -23,4 +25,5 @@ public class Film {
     @Positive(message = "Duration should be positive")
     @NotNull(message = "Duration should not be empty")
     private Integer duration;
+    private final Set<Integer> likes = new HashSet<>(); // сет пользователей, поставивших лайки
 }
