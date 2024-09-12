@@ -16,17 +16,16 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> getAll() {
-        log.info("GET /users request is processed");
+        log.info("/users get all users handled");
         return users.values();
     }
 
     @Override
     public User get(Integer userId) {
         if (!users.containsKey(userId)) {
-            log.info("User /users/{} is not found", userId);
             throw new NotFoundException(String.format("user with id = %d is not found", userId));
         }
-        log.info("GET /users/{} request is processed", userId);
+        log.info("get /users/{} handled", userId);
         return users.get(userId);
     }
 
@@ -58,7 +57,6 @@ public class InMemoryUserStorage implements UserStorage {
             users.remove(userId);
             log.info("User with id = {} is removed", userId);
         } else {
-            log.info("User with id = {} is not found", userId);
             throw new NotFoundException("User is not found",
                     new Throwable("User ID: %d ;" + userId).fillInStackTrace());
         }

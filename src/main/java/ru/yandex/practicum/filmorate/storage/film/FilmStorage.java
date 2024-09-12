@@ -9,6 +9,8 @@ public interface FilmStorage {
 
     Film get(Integer filmId);
 
+    Collection<Film> getTopRated(Integer count);
+
     Film add(Film film);
 
     Film update(Film updFilm);
