@@ -58,9 +58,9 @@
 
 ---
 
-## Примеры SQL-запросов
+### Примеры SQL-запросов
 
-### Получение списка пользователей с датой рождения позже 01.01.2000
+#### Получение списка пользователей с датой рождения позже 01.01.2000
 
 ```sql
 SELECT *  
@@ -69,7 +69,7 @@ WHERE birthday IS AFTER '2000-01-01'
 ORDER BY user_id;
 ```
 
-### Получение списка всех фильмов с длительностью более 120 минут в порядке убывания длительности
+#### Получение списка всех фильмов с длительностью более 120 минут в порядке убывания длительности
 
 ```sql
 SELECT * 
@@ -78,11 +78,67 @@ WHERE duration > 120
 ORDER BY duration DESC;
 ```
 
-### Получение списка всех фильмов с рейтингом R
+#### Получение списка имен 10 самых популярных фильмов
 
 ```sql
-SELECT * 
-FROM films
-WHERE duration > 120
-ORDER BY duration DESC;
+SELECT f.name, lf.likes AS likes_count
+FROM films AS f
+JOIN (
+    SELECT film_id, COUNT(user_id) AS likes
+    FROM liked_films
+    GROUP BY film_id
+) AS lf ON f.film_id = lf.film_id
+ORDER BY likes_count DESC
+LIMIT 10;
 ```
+
+#### Получение таблицы со всеми фильмами с рейтингом R
+
+```sql
+SELECT f.*
+FROM films AS f
+JOIN mpa_rating AS mr ON f.rating_id = mr.rating_id
+WHERE mr.name = 'R';
+```
+
+#### Получение таблицы с фильмами, у которых встречается жанр comedy
+
+```sql
+SELECT *
+FROM films
+WHERE film_id IN (
+    SELECT film_id
+    FROM films_genre
+    WHERE genre_id = (
+        SELECT genre_id
+        FROM genre
+        WHERE name = 'comedy'
+    )
+);
+```
+
+#### Получение таблицы всех пользователей, которые являются общими друзьями пользователя с user_id = 1 и пользователя user_id = 3
+```sql
+SELECT u.*
+FROM users AS u
+WHERE u.user_id IN (
+    SELECT f1.following_user_id
+    FROM friendship AS f1
+    WHERE f1.followed_user_id = 1 AND f1.friendship_status = true
+)
+AND u.user_id IN (
+    SELECT f2.following_user_id
+    FROM friendship AS f2
+    WHERE f2.followed_user_id = 3 AND f2.friendship_status = true
+);
+```
+
+#### Получение таблицы всех пользователей, которые являются подписчиками пользователя с user_id = 1
+
+```sql
+SELECT u.*
+FROM users AS u
+JOIN friendship AS f ON u.user_id = f.following_user_id
+WHERE f.followed_user_id = 1 AND f.friendship_status = false;
+```
+
