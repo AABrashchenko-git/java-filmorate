@@ -10,14 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * В доп. задании к ТЗ указано, что для валидации можно использовать аннотацию @Valid, в попытках разобраться
- * я ушел в гугл и нашел инфу о глобальном обработчике исключений, который
- * перехватывает MethodArgumentNotValidException в методах контроллеров и отправляет ответ клиенту
- * Не знаю, насколько это корректный подход в данном ТЗ, но решил попробовать,
- * вместо того, чтобы писать дополнительные методы для валидации и выбрасывать исключения
- */
-
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -36,5 +28,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleNotFoundExceptions(NotFoundException ex) {
         log.warn("Processing failed: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("[]");
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleInternalServerError(Throwable th) {
+        log.warn("Processing failed: {}", th.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("[]");
     }
 }

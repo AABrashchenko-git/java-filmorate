@@ -2,52 +2,61 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/films")
+//Logbook пока отключил, оставил везде Slf4j, чтобы не перегружать лог всеми деталями http-запросов
 @Slf4j
+@RequestMapping("/films")
 public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @GetMapping
     public Collection<Film> getAll() {
-        log.info("GET /films request is processed");
-        return films.values();
+        log.info("GET /films is processed");
+        return filmService.getAllFilms();
     }
 
     @PostMapping
     public Film add(@Valid @RequestBody Film film) {
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        log.info("Film {} is created", film.getName());
-        return film;
+        log.info("POST /films is processed");
+        return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film updFilm) {
-        if (films.containsKey(updFilm.getId())) {
-            films.replace(updFilm.getId(), updFilm);
-            log.info("Film {} is updated: {}", updFilm.getName(), updFilm);
-        } else {
-            throw new NotFoundException("Film is not found",
-                    new Throwable("Film ID: %d ;" + updFilm.getId()).fillInStackTrace());
-        }
-        return updFilm;
+        log.info("PUT /films is accessed");
+        return filmService.updateFilm(updFilm);
     }
 
-    private Integer getNextId() {
-        Integer currentMaxId = films.keySet()
-                .stream()
-                .max(Integer::compare)
-                .orElse(0);
-        return ++currentMaxId;
+    @GetMapping("/{id}")
+    public Film get(@PathVariable int id) {
+        log.info("GET /films/{} is accessed", id);
+        return filmService.getFilm(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public Film remove(@PathVariable int id) {
+        log.info("DELETE /films/{} is accessed", id);
+        return filmService.removeFilm(id);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> getTopRatedFilms(@RequestParam(required = false) Optional<Integer> count) {
+        Integer actualCount = count.orElse(0);
+        log.info("GET /films/popular is accessed");
+        return filmService.getTopRatedFilms(actualCount);
     }
 
 }
