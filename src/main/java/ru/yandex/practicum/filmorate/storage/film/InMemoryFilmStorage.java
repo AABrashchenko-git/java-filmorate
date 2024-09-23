@@ -25,8 +25,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film get(Integer filmId) {
         if (!films.containsKey(filmId)) {
-            //логирование отсюда и в других подобных местах(not found) убрал, т.к. выбрасывание
-            // исключения логируется в обработчике исключений с уровнем логирования WARN
             throw new NotFoundException(String.format("Film with id = %d is not found", filmId));
         }
         log.info("/films/{} handled", filmId);

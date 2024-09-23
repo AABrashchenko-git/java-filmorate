@@ -9,17 +9,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Как ты посоветовал, сделал отдельные сервисы и хранилища для друзей и лайков
- * Понятно, что мы это делаем, чтобы разграничить функциональность разных частей приложения,
- * но не странно, что мы делаем хранилище друзей, в конструктор которого внедряется зависимость
- * от хранилища пользователей (при этом никакой коллекции, мапы или сета мы тут не создаем, а используем мапу
- * их хранилища пользователей)? Это нормальная практика? Аналогично с хранилищем лайков
- * Просто выглядит так, будто мы плодим лишние сущности, и лучше все просто сделать внутри UserStorage :)
- *
- * (либо другой вариант - создать тут отдельную структуру данных для хранения лайков и друзей, но это ещё более
- * странно,ведь каждый фильм уже хранит в себе рейтинг, а каждый пользователь - список друзей)
- */
 @Component
 @Slf4j
 public class InMemoryFriendStorage implements FriendStorage {
@@ -31,6 +20,7 @@ public class InMemoryFriendStorage implements FriendStorage {
         this.userStorage = userStorage;
     }
 
+    @Override
     public User addUserAsFriend(Integer userId, Integer userIdToAdd) {
         User actualUser = userStorage.get(userId);
         User userToFriend = userStorage.get(userIdToAdd);
@@ -40,6 +30,7 @@ public class InMemoryFriendStorage implements FriendStorage {
         return userToFriend;
     }
 
+    @Override
     public User removeUserFromFriendsList(Integer userId, Integer userIdToRemove) {
         User actualUser = userStorage.get(userId);
         User userToRemove = userStorage.get(userIdToRemove);
@@ -49,6 +40,7 @@ public class InMemoryFriendStorage implements FriendStorage {
         return userToRemove;
     }
 
+    @Override
     public List<User> getUserFriends(Integer userId) {
         List<User> friends = userStorage.get(userId).getFriends()
                 .stream().map(userStorage::get).toList();
@@ -56,6 +48,7 @@ public class InMemoryFriendStorage implements FriendStorage {
         return friends;
     }
 
+    @Override
     public List<User> getMutualFriendsWithOtherUser(Integer userId, Integer otherUserId) {
         Set<Integer> userFriends = userStorage.get(userId).getFriends();
         Set<Integer> otherUserFriends = userStorage.get(otherUserId).getFriends();
@@ -64,6 +57,5 @@ public class InMemoryFriendStorage implements FriendStorage {
                 .stream().filter(otherUserFriends::contains)
                 .map(userStorage::get).toList();
     }
-
 
 }

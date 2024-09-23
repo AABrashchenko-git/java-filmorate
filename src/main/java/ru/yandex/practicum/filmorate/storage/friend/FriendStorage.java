@@ -13,5 +13,4 @@ public interface FriendStorage {
 
     List<User> getMutualFriendsWithOtherUser(Integer userId, Integer otherUserId);
 
-
 }

@@ -18,12 +18,14 @@ public class InMemoryLikeStorage implements LikeStorage {
         this.userStorage = userStorage;
     }
 
+    @Override
     public void addLikeFromUser(Integer filmId, Integer userId) {
         filmStorage.get(filmId).getLikes().add(userId);
         userStorage.get(userId).getLikedFilms().add(filmId);
         log.info("user {} liked film {}", userId, filmId);
     }
 
+    @Override
     public void removeLikeFromUser(Integer filmId, Integer userId) {
         filmStorage.get(filmId).getLikes().remove(userId);
         userStorage.get(userId).getLikedFilms().remove(filmId);
