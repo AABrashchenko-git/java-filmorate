@@ -35,13 +35,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Collection<Film> getTopRated(Integer count) {
         Stream<Film> topRatedFilmsStream = films.values()
                 .stream().sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed());
-        if (count == 0) {
-            log.info("10 most popular films handled");
-            return topRatedFilmsStream.limit(10).toList();
-        } else {
-            log.info("{} most popular films handled", count);
-            return topRatedFilmsStream.limit(count).toList();
-        }
+        log.info("get {} most popular films handled", count);
+        return topRatedFilmsStream.limit(count).toList();
     }
 
     @Override
