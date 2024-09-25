@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.service.LikeService;
 
@@ -9,13 +9,9 @@ import ru.yandex.practicum.filmorate.service.LikeService;
 @RestController
 @Slf4j
 @RequestMapping("/films/{id}/like/{userId}")
+@RequiredArgsConstructor
 public class LikeController {
     private final LikeService likeService;
-
-    @Autowired
-    public LikeController(LikeService likeService) {
-        this.likeService = likeService;
-    }
 
     @PutMapping
     public void addLikeFromUser(@PathVariable int id, @PathVariable int userId) {

@@ -1,26 +1,20 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @RestController
-//Logbook пока отключил, оставил везде Slf4j, чтобы не перегружать лог всеми деталями http-запросов
 @Slf4j
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @GetMapping
     public Collection<Film> getAll() {
@@ -53,10 +47,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getTopRatedFilms(@RequestParam(required = false) Optional<Integer> count) {
-        Integer actualCount = count.orElse(0);
+    public Collection<Film> getTopRatedFilms(@RequestParam(required = false, defaultValue = "10")
+                                                 Integer count) {
         log.info("GET /films/popular is accessed");
-        return filmService.getTopRatedFilms(actualCount);
+        return filmService.getTopRatedFilms(count);
     }
-
 }
