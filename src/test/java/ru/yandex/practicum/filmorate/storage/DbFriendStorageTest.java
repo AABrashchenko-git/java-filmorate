@@ -37,7 +37,7 @@ public class DbFriendStorageTest {
     private User user3;
 
     @Autowired
-    public DbFriendStorageTest(@Qualifier("dbFriendStorage") FriendStorage friendStorage,  @Qualifier("dbUserStorage")UserStorage userStorage) {
+    public DbFriendStorageTest(@Qualifier("dbFriendStorage") FriendStorage friendStorage, @Qualifier("dbUserStorage") UserStorage userStorage) {
         this.friendStorage = friendStorage;
         this.userStorage = userStorage;
     }
@@ -86,7 +86,6 @@ public class DbFriendStorageTest {
         assertThat(updatedUser2.getFriends()).contains(user1.getId());
 
     }
-
 
 
     @Test
