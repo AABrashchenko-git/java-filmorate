@@ -17,6 +17,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class GenreController {
     private final GenreService genreService;
+
     @GetMapping
     public Collection<Genre> getAll() {
         log.info("GET /genres is accessed");
