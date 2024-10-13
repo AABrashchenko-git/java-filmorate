@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -8,9 +8,12 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.Collection;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+
+    public UserService(@Qualifier("dbUserStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     public Collection<User> getAllUsers() {
         return userStorage.getAll();
@@ -28,8 +31,8 @@ public class UserService {
         return userStorage.get(id);
     }
 
-    public User removeUser(int userId) {
-        return userStorage.remove(userId);
+    public void removeUser(int userId) {
+        userStorage.remove(userId);
     }
 
 }

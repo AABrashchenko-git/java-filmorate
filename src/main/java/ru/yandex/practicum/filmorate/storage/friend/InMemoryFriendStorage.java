@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.friend;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -11,25 +11,28 @@ import java.util.Set;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class InMemoryFriendStorage implements FriendStorage {
 
     private final UserStorage userStorage;
 
-    @Override
-    public User addUserAsFriend(Integer userId, Integer userIdToAdd) {
-        userStorage.get(userId).getFriends().add(userIdToAdd);
-        userStorage.get(userIdToAdd).getFriends().add(userId);
-        log.info("User {} added user {} to friends list", userId, userIdToAdd);
-        return userStorage.get(userIdToAdd);
+    public InMemoryFriendStorage(@Qualifier("inMemoryUserStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
     }
 
     @Override
-    public User removeUserFromFriendsList(Integer userId, Integer userIdToRemove) {
+    public void addUserAsFriend(Integer userId, Integer userIdToAdd) {
+        userStorage.get(userId).getFriends().add(userIdToAdd);
+        userStorage.get(userIdToAdd).getFriends().add(userId);
+        log.info("User {} added user {} to friends list", userId, userIdToAdd);
+        userStorage.get(userIdToAdd);
+    }
+
+    @Override
+    public void removeUserFromFriendsList(Integer userId, Integer userIdToRemove) {
         userStorage.get(userId).getFriends().remove(userIdToRemove);
         userStorage.get(userIdToRemove).getFriends().remove(userId);
         log.info("User {} removed user {} from friends list", userId, userIdToRemove);
-        return userStorage.get(userIdToRemove);
+        userStorage.get(userIdToRemove);
     }
 
     @Override

@@ -35,9 +35,9 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public User remove(@PathVariable int id) {
+    public void remove(@PathVariable int id) {
         log.info("DELETE /users/{} is accessed", id);
-        return userService.removeUser(id);
+        userService.removeUser(id);
     }
 
     @PutMapping

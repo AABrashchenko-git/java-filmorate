@@ -41,9 +41,9 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}")
-    public Film remove(@PathVariable int id) {
+    public void remove(@PathVariable int id) {
         log.info("DELETE /films/{} is accessed", id);
-        return filmService.removeFilm(id);
+        filmService.removeFilm(id);
     }
 
     @GetMapping("/popular")

@@ -51,7 +51,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User remove(Integer userId) {
+    public void remove(Integer userId) {
         if (users.get(userId) != null) {
             users.remove(userId);
             log.info("User with id = {} is removed", userId);
@@ -59,7 +59,7 @@ public class InMemoryUserStorage implements UserStorage {
             throw new NotFoundException("User is not found",
                     new Throwable("User ID: %d ;" + userId).fillInStackTrace());
         }
-        return users.get(userId);
+        users.get(userId);
     }
 
     private Integer getNextId() {

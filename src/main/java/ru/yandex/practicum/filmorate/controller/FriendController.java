@@ -16,15 +16,15 @@ public class FriendController {
     private final FriendService friendService;
 
     @PutMapping("/{friendId}")
-    public User addUserAsFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public void addUserAsFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         log.info("PUT /users/{}/friends/{} is accessed", id, friendId);
-        return friendService.addUserAsFriend(id, friendId);
+        friendService.addUserAsFriend(id, friendId);
     }
 
     @DeleteMapping("/{friendId}")
-    public User removeUserFromFriendsList(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public void removeUserFromFriendsList(@PathVariable Integer id, @PathVariable Integer friendId) {
         log.info("DELETE /users/{}/friends/{} is accessed", id, friendId);
-        return friendService.removeUserFromFriendsList(id, friendId);
+        friendService.removeUserFromFriendsList(id, friendId);
     }
 
     @GetMapping

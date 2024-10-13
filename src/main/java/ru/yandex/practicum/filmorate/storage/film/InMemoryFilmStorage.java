@@ -60,7 +60,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film remove(Integer filmId) {
+    public void remove(Integer filmId) {
         Film filmToRemove = films.get(filmId);
         if (filmToRemove != null) {
             films.remove(filmId);
@@ -69,7 +69,6 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Film is not found",
                     new Throwable("Film ID: %d ;" + filmId).fillInStackTrace());
         }
-        return filmToRemove;
     }
 
     private Integer getNextId() {

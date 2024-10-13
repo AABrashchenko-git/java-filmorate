@@ -34,16 +34,17 @@ public class UserControllerTest {
     void beforeEach() {
         // проходят по критериям валидации
         user1 = User.builder()
-                .name("user1Name")
-                .email("aab90@yandex.ru")
-                .login("aab90")
-                .birthday(LocalDate.now().minusYears(27))
+                .email("user1@example.com")
+                .login("user1")
+                .name("User One")
+                .birthday(LocalDate.of(1990, 1, 1))
                 .build();
+
         user2 = User.builder()
-                .name("user2Name")
-                .email("user2@yandex.ru")
+                .email("user2@example.com")
                 .login("user2")
-                .birthday(LocalDate.now().minusYears(55))
+                .name("User Two")
+                .birthday(LocalDate.of(1995, 5, 5))
                 .build();
     }
 
