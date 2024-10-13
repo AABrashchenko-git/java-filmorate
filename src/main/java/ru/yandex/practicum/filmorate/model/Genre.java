@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-//@EqualsAndHashCode(of = {"id"})
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Genre {

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.friend;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -10,13 +11,14 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 
+@Slf4j
 @Repository("dbFriendStorage")
 public class DbFriendStorage implements FriendStorage {
     private final JdbcTemplate jdbc;
-    private final UserMapper mapper; /*TODO а юзер ли здесь? */
+    private final UserMapper mapper;
     private final UserStorage userStorage;
 
-    public DbFriendStorage(JdbcTemplate jdbc, UserMapper mapper,  @Qualifier("dbUserStorage") UserStorage userStorage) {
+    public DbFriendStorage(JdbcTemplate jdbc, UserMapper mapper, @Qualifier("dbUserStorage") UserStorage userStorage) {
         this.jdbc = jdbc;
         this.mapper = mapper;
         this.userStorage = userStorage;
@@ -35,34 +37,33 @@ public class DbFriendStorage implements FriendStorage {
                 SET friendship_status = true
                 WHERE followed_user_id = ? AND following_user_id = ?;
                 """;
-       if(!user.getFriends().contains(friendIdToAdd) && !friend.getFriends().contains(userId)) {
-           jdbc.update(addRelationQuery, userId, friendIdToAdd, true);
-           jdbc.update(addRelationQuery, friendIdToAdd, userId, false);
-        } else if(!user.getFriends().contains(friendIdToAdd) && friend.getFriends().contains(friendIdToAdd)) {
-           jdbc.update(updateRelationQuery , friendIdToAdd, userId);
+        if (!user.getFriends().contains(friendIdToAdd) && !friend.getFriends().contains(userId)) {
+            jdbc.update(addRelationQuery, userId, friendIdToAdd, true);
+            jdbc.update(addRelationQuery, friendIdToAdd, userId, false);
+        } else if (!user.getFriends().contains(friendIdToAdd) && friend.getFriends().contains(friendIdToAdd)) {
+            jdbc.update(updateRelationQuery, friendIdToAdd, userId);
 
-       } else if (user.getFriends().contains(friendIdToAdd) && !friend.getFriends().contains(friendIdToAdd)) {
-           jdbc.update(updateRelationQuery , userId, friendIdToAdd);
-       }
+        } else if (user.getFriends().contains(friendIdToAdd) && !friend.getFriends().contains(friendIdToAdd)) {
+            jdbc.update(updateRelationQuery, userId, friendIdToAdd);
+        }
+        log.info("User {} added user {} to friends list", userId, friendIdToAdd);
     }
 
     @Override
     public void removeUserFromFriendsList(Integer userId, Integer userIdToRemove) {
-        if (!userExists(userId) || !userExists(userIdToRemove) ) {
-            throw new NotFoundException("User with id " + userId + " or " + userIdToRemove + " does not exist");
-        }
+        userExists(userId);
+        userExists(userIdToRemove);
         String query = """
                 DELETE FROM friendship
                 WHERE followed_user_id = ? AND following_user_id = ?;
                 """;
         jdbc.update(query, userId, userIdToRemove);
+        log.info("User {} removed user {} from friends list", userId, userIdToRemove);
     }
 
     @Override
     public List<User> getUserFriends(Integer userId) {
-        if (!userExists(userId)) {
-            throw new NotFoundException("User with id " + userId + " does not exist");
-        }
+        userExists(userId);
         String sql = """
                 SELECT u.*
                 FROM users u
@@ -78,6 +79,7 @@ public class DbFriendStorage implements FriendStorage {
         for (User friend : friends) {
             friend.getFriends().addAll(friendsMap.getOrDefault(friend.getId(), new HashSet<>()));
         }
+        log.info("get user {} friends handled", userId);
         return friends;
     }
 
@@ -97,17 +99,8 @@ public class DbFriendStorage implements FriendStorage {
                     WHERE f2.followed_user_id = ? AND f2.friendship_status = true
                 );
                 """;
+        log.info("Mutual friends of users {} and {} handled", userId, otherUserId);
         return jdbc.query(query, mapper, userId, otherUserId);
-    }
-
-    private boolean relationExists(int followedUserId, int followingUserId) {
-        String query = """
-                SELECT COUNT(*)
-                FROM users
-                WHERE user_id = ? OR user_id = ?;
-                """;
-        Integer count = jdbc.queryForObject(query, Integer.class, followedUserId, followingUserId);
-        return !(count == null || count <= 1);
     }
 
     private Map<Integer, Set<Integer>> loadFriendsMap(Integer userId) {
@@ -129,13 +122,15 @@ public class DbFriendStorage implements FriendStorage {
         }, userId);
     }
 
-    private boolean userExists(Integer userId) {
+    private void userExists(Integer userId) {
         String sql = """
                 SELECT COUNT(*)
                 FROM users
                 WHERE user_id = ?;
                 """;
         Integer count = jdbc.queryForObject(sql, Integer.class, userId);
-        return count != null && count > 0;
+        if (!(count != null && count > 0)) {
+            throw new NotFoundException("User with id " + userId + " does not exist");
+        }
     }
 }

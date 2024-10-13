@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.mpa;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Slf4j
 @Repository
 public class DbMpaStorage implements MpaStorage {
     private final JdbcTemplate jdbc;
@@ -19,6 +21,7 @@ public class DbMpaStorage implements MpaStorage {
                 SELECT *
                 FROM mpa_rating;
                 """;
+        log.info("/mpa get all ratings handled");
         return jdbc.query(query, (rs, rowNum) ->
                 Mpa.builder().id(rs.getInt("rating_id")).name(rs.getString("name")).build());
     }
@@ -33,8 +36,9 @@ public class DbMpaStorage implements MpaStorage {
                 FROM mpa_rating
                 WHERE rating_id = ?;
                 """;
-        return jdbc.queryForObject(query, new Object[]{id}, (rs, rowNum) ->
-                Mpa.builder().id(rs.getInt("rating_id")).name(rs.getString("name")).build());
+        log.info("/mpa/id get rating handled");
+        return jdbc.queryForObject(query, (rs, rowNum) ->
+                Mpa.builder().id(rs.getInt("rating_id")).name(rs.getString("name")).build(), id);
     }
 
     private boolean mpaExists(int mpaId) {

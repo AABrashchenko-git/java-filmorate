@@ -73,7 +73,6 @@ public class DbFriendStorageTest {
 
     @Test
     void testAddUserAsFriendBothUsersAddEachOther() {
-        System.out.println();
         // Пользователь 1 добавляет пользователя 2 в друзья
         friendStorage.addUserAsFriend(user1.getId(), user2.getId());
         // Пользователь 2 добавляет пользователя 1 в друзья

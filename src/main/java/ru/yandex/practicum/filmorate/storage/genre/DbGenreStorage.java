@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.genre;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Slf4j
 @Repository
 public class DbGenreStorage implements GenreStorage {
     private final JdbcTemplate jdbc;
@@ -19,6 +21,7 @@ public class DbGenreStorage implements GenreStorage {
                 SELECT *
                 FROM genre;
                 """;
+        log.info("/genres get genres handled");
         return jdbc.query(query, (rs, rowNum) ->
                 Genre.builder().id(rs.getInt("genre_id")).name(rs.getString("name")).build());
     }
@@ -33,8 +36,9 @@ public class DbGenreStorage implements GenreStorage {
                 FROM genre
                 WHERE genre_id = ?;
                 """;
-        return jdbc.queryForObject(query, new Object[]{id}, (rs, rowNum) ->
-                Genre.builder().id(rs.getInt("genre_id")).name(rs.getString("name")).build());
+        log.info("/genres get genres handled");
+        return jdbc.queryForObject(query, (rs, rowNum) ->
+                Genre.builder().id(rs.getInt("genre_id")).name(rs.getString("name")).build(), id);
     }
 
     private boolean genreExists(int genreId) {

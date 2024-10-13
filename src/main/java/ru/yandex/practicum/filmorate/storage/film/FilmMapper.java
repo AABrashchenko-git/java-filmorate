@@ -20,8 +20,8 @@ public class FilmMapper implements RowMapper<Film> {
                 .releaseDate(rs.getDate("release_date").toLocalDate())
                 .duration(rs.getInt("duration"))
                 .mpa((Mpa.builder()
-                                .name(rs.getString("mpa_name"))
-                                .id(rs.getInt("rating_id"))).build())
+                        .name(rs.getString("mpa_name"))
+                        .id(rs.getInt("rating_id"))).build())
                 .likes(new HashSet<>())
                 .build();
     }

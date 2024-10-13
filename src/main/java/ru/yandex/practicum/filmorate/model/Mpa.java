@@ -10,8 +10,6 @@ import lombok.EqualsAndHashCode;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 public class Mpa {
-   // @NotNull(message = "MPA Rating name should not be null")
     private Integer id;
-   // @NotNull(message = "MPA Rating name should not be null")
     private String name;
 }
