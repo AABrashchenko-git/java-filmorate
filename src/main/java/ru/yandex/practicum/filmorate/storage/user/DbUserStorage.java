@@ -46,7 +46,7 @@ public class DbUserStorage implements UserStorage {
                 WHERE followed_user_id = ? /*AND friendship_status = TRUE*/;
                 """;
         Set<Integer> friendsIds = new HashSet<>(jdbc.queryForList(geFriendsIdListQuery, new Object[]{userId}, Integer.class));
-        if(user != null){
+        if (user != null) {
             user.getFriends().addAll(friendsIds);
         }
         log.info("get /users/{} handled", userId);
@@ -109,9 +109,9 @@ public class DbUserStorage implements UserStorage {
                 """;
         Map<Integer, Set<Integer>> likedFilms = new HashMap<>();
         jdbc.query(query, rs -> {
-            Integer followed_user_id = rs.getInt("followed_user_id");
-            Integer following_user_id = rs.getInt("following_user_id");
-            likedFilms.computeIfAbsent(followed_user_id, k -> new HashSet<>()).add(following_user_id);
+            Integer followedUserId = rs.getInt("followed_user_id");
+            Integer followingUserId = rs.getInt("following_user_id");
+            likedFilms.computeIfAbsent(followedUserId, k -> new HashSet<>()).add(followingUserId);
         });
         usersWithoutFriends.forEach(u -> {
             if (likedFilms.containsKey(u.getId())) {
