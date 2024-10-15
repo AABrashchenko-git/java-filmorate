@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 
@@ -8,7 +7,6 @@ import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 public class LikeService {
     private final LikeStorage likeStorage;
 
-    @Autowired
     public LikeService(LikeStorage likeStorage) {
         this.likeStorage = likeStorage;
     }

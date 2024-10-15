@@ -10,8 +10,6 @@ import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.validator.NoSpaces;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Builder(toBuilder = true)
@@ -27,6 +25,4 @@ public class User {
     private String name;
     @PastOrPresent(message = "Incorrect birthday")
     private LocalDate birthday;
-    private final Set<Integer> friends = new HashSet<>(); // друзья пользователя
-    private final Set<Integer> likedFilms = new HashSet<>(); // Какие фильмы лайкнул пользователь (по ТЗ не надо)
 }
