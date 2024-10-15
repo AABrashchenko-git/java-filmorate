@@ -1,10 +1,8 @@
 package ru.yandex.practicum.filmorate.storage;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
@@ -28,16 +26,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import({DbFriendStorage.class, DbUserStorage.class, UserMapper.class})
 public class DbFriendStorageTest {
-
     private final FriendStorage friendStorage;
     private final UserStorage userStorage;
-
     private User user1;
     private User user2;
     private User user3;
 
     @Autowired
-    public DbFriendStorageTest(@Qualifier("dbFriendStorage") FriendStorage friendStorage, @Qualifier("dbUserStorage") UserStorage userStorage) {
+    public DbFriendStorageTest(FriendStorage friendStorage, UserStorage userStorage) {
         this.friendStorage = friendStorage;
         this.userStorage = userStorage;
     }
@@ -66,40 +62,43 @@ public class DbFriendStorageTest {
                 .birthday(LocalDate.of(1985, 10, 10))
                 .build();
 
-        userStorage.add(user1);
-        userStorage.add(user2);
-        userStorage.add(user3);
+        userStorage.addUser(user1);
+        userStorage.addUser(user2);
+        userStorage.addUser(user3);
     }
 
     @Test
     void testAddUserAsFriendBothUsersAddEachOther() {
         // Пользователь 1 добавляет пользователя 2 в друзья
         friendStorage.addUserAsFriend(user1.getId(), user2.getId());
+        System.out.println("Пользователь 1 добавляет пользователя 2 в друзья");
         // Пользователь 2 добавляет пользователя 1 в друзья
         friendStorage.addUserAsFriend(user2.getId(), user1.getId());
+        System.out.println("Пользователь 2 добавляет пользователя 1 в друзья");
 
         // Проверяем, что оба пользователя стали друзьями
-        User updatedUser1 = userStorage.get(user1.getId());
-        User updatedUser2 = userStorage.get(user2.getId());
+        List<Integer> userFriendsIds =
+                friendStorage.getUserFriends(user1.getId()).stream().map(User::getId).toList();
+        List<Integer> userToAddFriendsIds =
+                friendStorage.getUserFriends(user2.getId()).stream().map(User::getId).toList();
 
-        assertThat(updatedUser1.getFriends()).contains(user2.getId());
-        assertThat(updatedUser2.getFriends()).contains(user1.getId());
-
+        assertThat(userFriendsIds).contains(user2.getId());
+        assertThat(userToAddFriendsIds).contains(user1.getId());
     }
-
 
     @Test
     void testRemoveUserFromFriendsList() {
         friendStorage.addUserAsFriend(user1.getId(), user2.getId());
         friendStorage.addUserAsFriend(user2.getId(), user1.getId());
 
-
         // Удаляем пользователя 2 из друзей пользователя 1
         friendStorage.removeUserFromFriendsList(user1.getId(), user2.getId());
 
         // Проверяем, что пользователь 2 удален из друзей пользователя 1
-        User userAfterRemove = userStorage.get(user1.getId());
-        assertThat(userAfterRemove.getFriends()).doesNotContain(user2.getId());
+        List<Integer> userAfterRemoveFriendsIds =
+                friendStorage.getUserFriends(user1.getId())
+                        .stream().map(User::getId).toList();
+        assertThat(userAfterRemoveFriendsIds).doesNotContain(user2.getId());
     }
 
     @Test
@@ -141,8 +140,10 @@ public class DbFriendStorageTest {
     @Test
     void testRemoveUserFromFriendsListThrowsNotFoundException() {
         // Проверяем, что метод выбрасывает исключение, если пользователь не найден
-        assertThrows(NotFoundException.class, () -> friendStorage.removeUserFromFriendsList(999, user1.getId()));
-        assertThrows(NotFoundException.class, () -> friendStorage.removeUserFromFriendsList(user1.getId(), 999));
+        assertThrows(NotFoundException.class,
+                () -> friendStorage.removeUserFromFriendsList(999, user1.getId()));
+        assertThrows(NotFoundException.class,
+                () -> friendStorage.removeUserFromFriendsList(user1.getId(), 999));
     }
 
 }

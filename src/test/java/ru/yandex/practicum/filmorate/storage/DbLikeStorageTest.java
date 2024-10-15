@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
@@ -15,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.DbFilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmMapper;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.DbGenreStorage;
 import ru.yandex.practicum.filmorate.storage.like.DbLikeStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.user.DbUserStorage;
@@ -30,7 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @JdbcTest
 @AutoConfigureTestDatabase
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({DbLikeStorage.class, DbFilmStorage.class, DbUserStorage.class, FilmMapper.class, UserMapper.class})
+@Import({DbLikeStorage.class, DbFilmStorage.class,
+        DbGenreStorage.class, DbUserStorage.class, FilmMapper.class, UserMapper.class})
 public class DbLikeStorageTest {
 
     private final LikeStorage likeStorage;
@@ -41,7 +42,7 @@ public class DbLikeStorageTest {
     private User user1;
 
     @Autowired
-    public DbLikeStorageTest(@Qualifier("dbLikeStorage") LikeStorage likeStorage, @Qualifier("dbFilmStorage") FilmStorage filmStorage, @Qualifier("dbUserStorage") UserStorage userStorage) {
+    public DbLikeStorageTest(LikeStorage likeStorage, FilmStorage filmStorage, UserStorage userStorage) {
         this.likeStorage = likeStorage;
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
@@ -70,17 +71,15 @@ public class DbLikeStorageTest {
 
         film1.getGenres().addAll(testGenres);
 
-        filmStorage.add(film1);
-        userStorage.add(user1);
+        filmStorage.addFilm(film1);
+        userStorage.addUser(user1);
     }
 
     @Test
     void testAddLikeFromUser() {
         likeStorage.addLikeFromUser(film1.getId(), user1.getId());
-
         // Проверяем, что лайк добавлен
-        Film updatedFilm = filmStorage.get(film1.getId());
-        assertThat(updatedFilm.getLikes()).contains(user1.getId());
+        assertThat(filmStorage.getFilmLikes(film1.getId())).contains(user1.getId());
     }
 
     @Test
@@ -88,14 +87,14 @@ public class DbLikeStorageTest {
         likeStorage.addLikeFromUser(film1.getId(), user1.getId());
 
         // Проверяем, что лайк добавлен
-        Film updatedFilm = filmStorage.get(film1.getId());
-        assertThat(updatedFilm.getLikes()).contains(user1.getId());
+        Film updatedFilm = filmStorage.getFilm(film1.getId());
+        assertThat(filmStorage.getFilmLikes(film1.getId())).contains(user1.getId());
 
         // Удаляем лайк
         likeStorage.removeLikeFromUser(film1.getId(), user1.getId());
 
         // Проверяем, что лайк удален
-        Film filmAfterRemove = filmStorage.get(film1.getId());
-        assertThat(filmAfterRemove.getLikes()).doesNotContain(user1.getId());
+        Film filmAfterRemove = filmStorage.getFilm(film1.getId());
+        assertThat(filmStorage.getFilmLikes(film1.getId())).doesNotContain(user1.getId());
     }
 }

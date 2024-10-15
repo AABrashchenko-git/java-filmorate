@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.friend;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserMapper;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 
@@ -16,18 +14,17 @@ import java.util.*;
 public class DbFriendStorage implements FriendStorage {
     private final JdbcTemplate jdbc;
     private final UserMapper mapper;
-    private final UserStorage userStorage;
 
-    public DbFriendStorage(JdbcTemplate jdbc, UserMapper mapper, @Qualifier("dbUserStorage") UserStorage userStorage) {
+    public DbFriendStorage(JdbcTemplate jdbc, UserMapper mapper) {
         this.jdbc = jdbc;
         this.mapper = mapper;
-        this.userStorage = userStorage;
     }
 
     @Override
     public void addUserAsFriend(Integer userId, Integer friendIdToAdd) {
-        User user = userStorage.get(userId);
-        User friend = userStorage.get(friendIdToAdd);
+        List<Integer> userFriendsIds = getUserFriends(userId).stream().map(User::getId).toList();
+        List<Integer> userToAddFriendsIds = getUserFriends(friendIdToAdd).stream().map(User::getId).toList();
+
         String addRelationQuery = """
                 INSERT INTO friendship (followed_user_id, following_user_id, friendship_status)
                 VALUES (?, ?, ?);
@@ -37,14 +34,14 @@ public class DbFriendStorage implements FriendStorage {
                 SET friendship_status = true
                 WHERE followed_user_id = ? AND following_user_id = ?;
                 """;
-        if (!user.getFriends().contains(friendIdToAdd) && !friend.getFriends().contains(userId)) {
+        if (!userFriendsIds.contains(friendIdToAdd) && !userToAddFriendsIds.contains(userId)) {
             jdbc.update(addRelationQuery, userId, friendIdToAdd, true);
             jdbc.update(addRelationQuery, friendIdToAdd, userId, false);
-        } else if (!user.getFriends().contains(friendIdToAdd) && friend.getFriends().contains(friendIdToAdd)) {
-            jdbc.update(updateRelationQuery, friendIdToAdd, userId);
+        } else if (!userFriendsIds.contains(friendIdToAdd) && userToAddFriendsIds.contains(userId)) {
 
-        } else if (user.getFriends().contains(friendIdToAdd) && !friend.getFriends().contains(friendIdToAdd)) {
             jdbc.update(updateRelationQuery, userId, friendIdToAdd);
+        } else if (userFriendsIds.contains(friendIdToAdd) && !userToAddFriendsIds.contains(userId)) {
+            jdbc.update(updateRelationQuery, friendIdToAdd, userId);
         }
         log.info("User {} added user {} to friends list", userId, friendIdToAdd);
     }
@@ -73,12 +70,7 @@ public class DbFriendStorage implements FriendStorage {
                 """;
 
         List<User> friends = jdbc.query(sql, mapper, userId);
-        // Загрузка всех друзей одним запросом
-        Map<Integer, Set<Integer>> friendsMap = loadFriendsMap(userId);
-        // Заполнение сетов друзей для каждого пользователя
-        for (User friend : friends) {
-            friend.getFriends().addAll(friendsMap.getOrDefault(friend.getId(), new HashSet<>()));
-        }
+
         log.info("get user {} friends handled", userId);
         return friends;
     }
@@ -101,25 +93,6 @@ public class DbFriendStorage implements FriendStorage {
                 """;
         log.info("Mutual friends of users {} and {} handled", userId, otherUserId);
         return jdbc.query(query, mapper, userId, otherUserId);
-    }
-
-    private Map<Integer, Set<Integer>> loadFriendsMap(Integer userId) {
-        String friendsQuery = """
-                SELECT followed_user_id, following_user_id
-                FROM friendship
-                WHERE followed_user_id IN (SELECT following_user_id FROM friendship WHERE followed_user_id = ?)
-                AND friendship_status = TRUE;
-                """;
-
-        return jdbc.query(friendsQuery, rs -> {
-            Map<Integer, Set<Integer>> friendsMap = new HashMap<>();
-            while (rs.next()) {
-                int followedUserId = rs.getInt("followed_user_id");
-                int followingUserId = rs.getInt("following_user_id");
-                friendsMap.computeIfAbsent(followedUserId, k -> new HashSet<>()).add(followingUserId);
-            }
-            return friendsMap;
-        }, userId);
     }
 
     private void userExists(Integer userId) {

@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
 
 @Component
 public class FilmMapper implements RowMapper<Film> {
@@ -22,7 +21,6 @@ public class FilmMapper implements RowMapper<Film> {
                 .mpa((Mpa.builder()
                         .name(rs.getString("mpa_name"))
                         .id(rs.getInt("rating_id"))).build())
-                .likes(new HashSet<>())
                 .build();
     }
 }

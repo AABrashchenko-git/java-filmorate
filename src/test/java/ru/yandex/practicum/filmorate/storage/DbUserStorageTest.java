@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
@@ -20,7 +19,6 @@ import java.util.Collection;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
 @JdbcTest
 @AutoConfigureTestDatabase
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -31,7 +29,7 @@ public class DbUserStorageTest {
     private User user2;
 
     @Autowired
-    public DbUserStorageTest(@Qualifier("dbUserStorage") UserStorage userStorage) {
+    public DbUserStorageTest(UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -51,14 +49,14 @@ public class DbUserStorageTest {
                 .birthday(LocalDate.of(1995, 5, 5))
                 .build();
 
-        userStorage.add(user1);
-        userStorage.add(user2);
+        userStorage.addUser(user1);
+        userStorage.addUser(user2);
     }
 
     @Test
     void testGetUserById() {
-        User receivedUser1 = userStorage.get(1);
-        User receivedUser2 = userStorage.get(2);
+        User receivedUser1 = userStorage.getUser(1);
+        User receivedUser2 = userStorage.getUser(2);
         assertThat(receivedUser1).isNotNull();
         assertThat(receivedUser1.getId()).isEqualTo(1);
         assertThat(receivedUser2).isNotNull();
@@ -67,18 +65,18 @@ public class DbUserStorageTest {
 
     @Test
     void testGetAllUsers() {
-        Collection<User> users = userStorage.getAll();
+        Collection<User> users = userStorage.getAllUsers();
         assertThat(users).isNotEmpty();
         assertThat(users).hasSize(2);
     }
 
     @Test
     void testUpdateUser() {
-        User existingUser = userStorage.get(1);
+        User existingUser = userStorage.getUser(1);
         existingUser.setName("Updated User");
         existingUser.setEmail("updated@example.com");
 
-        User updatedUser = userStorage.update(existingUser);
+        User updatedUser = userStorage.updateUser(existingUser);
         assertThat(updatedUser).isNotNull();
         assertThat(updatedUser.getName()).isEqualTo("Updated User");
         assertThat(updatedUser.getEmail()).isEqualTo("updated@example.com");
@@ -86,8 +84,8 @@ public class DbUserStorageTest {
 
     @Test
     void testRemoveUser() {
-        userStorage.remove(1);
-        assertThrows(NotFoundException.class, () -> userStorage.get(1));
+        userStorage.removeUser(1);
+        assertThrows(NotFoundException.class, () -> userStorage.getUser(1));
     }
 }
 

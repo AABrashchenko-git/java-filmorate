@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
@@ -13,7 +12,7 @@ import java.util.List;
 public class FriendService {
     private final FriendStorage friendStorage;
 
-    public FriendService(@Qualifier("dbFriendStorage") FriendStorage friendStorage) {
+    public FriendService(FriendStorage friendStorage) {
         this.friendStorage = friendStorage;
     }
 

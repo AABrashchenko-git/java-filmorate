@@ -11,7 +11,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
-@Repository
+@Repository("dbGenreStorage")
 public class DbGenreStorage implements GenreStorage {
     private final JdbcTemplate jdbc;
 

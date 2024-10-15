@@ -7,6 +7,10 @@ CREATE TABLE IF NOT EXISTS users (
                        birthday TIMESTAMP NOT NULL
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS USER_EMAIL_UINDEX ON users (email);
+
+CREATE UNIQUE INDEX IF NOT EXISTS USER_LOGIN_UINDEX ON users (login);
+
 -- Создание таблицы friendship
 CREATE TABLE IF NOT EXISTS friendship (
                             followed_user_id INTEGER NOT NULL,

@@ -24,7 +24,7 @@ public class DbFilmStorage implements FilmStorage {
     private final FilmMapper mapper;
 
     @Override
-    public Film get(Integer filmId) {
+    public Film getFilm(Integer filmId) {
         filmExists(filmId);
         String getFilmQuery = """
                 SELECT f.*, r.name AS mpa_name
@@ -37,7 +37,7 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getAll() {
+    public Collection<Film> getAllFilms() {
         String query = """
                 SELECT f.*, r.name AS mpa_name
                 FROM films f
@@ -50,7 +50,7 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTopRated(Integer number) {
+    public Collection<Film> getTopRatedFilms(Integer number) {
         String query = """
                 SELECT f.*, r.name AS mpa_name
                 FROM films AS f
@@ -69,7 +69,7 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film add(Film film) {
+    public Film addFilm(Film film) {
         if (!filmValid(film)) {
             throw new InvalidInfoException("MPA or Genres are invalid");
         }
@@ -103,7 +103,7 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(Film updFilm) {
+    public Film updateFilm(Film updFilm) {
         filmExists(updFilm.getId());
         String query = """
                 UPDATE films
@@ -134,7 +134,7 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void remove(Integer id) {
+    public void removeFilm(Integer id) {
         filmExists(id);
         String query = """
                 DELETE FROM films
@@ -145,6 +145,14 @@ public class DbFilmStorage implements FilmStorage {
             throw new IllegalStateException("Ошибка при удалении фильма с id " + id);
         }
         log.info("Film with id = {} is removed", id);
+    }
+
+    public Collection<Integer> getFilmLikes(Integer id) {
+        String sql = """
+                SELECT user_id FROM liked_films WHERE film_id = ?;
+                """;
+        log.info("get filmId = {} likes handled", id);
+        return jdbc.queryForList(sql, Integer.class, id);
     }
 
     private Film addGenresAndLikesToSingleFilm(Film film) {
@@ -161,17 +169,8 @@ public class DbFilmStorage implements FilmStorage {
                         .name(rs.getString("name")).build(),
                 film.getId());
 
-        // Получаем лайки фильма
-        String sqlLikes = """
-                SELECT user_id
-                FROM liked_films
-                WHERE film_id = ?;
-                """;
-        Set<Integer> likes = new HashSet<>(jdbc.queryForList(sqlLikes, new Object[]{film.getId()}, Integer.class));
-
-        // Заполняем объект Film
+        // Заполняем объект Film жанрами
         film.getGenres().addAll(genres);
-        film.getLikes().addAll(likes);
         log.info("/films/{} handled", film.getId());
         return film;
     }
@@ -208,9 +207,6 @@ public class DbFilmStorage implements FilmStorage {
         // Заполняем лайки и жанры для каждого фильма
         for (Film film : films) {
             int filmId = film.getId();
-            if (likesMap.containsKey(filmId)) {
-                film.getLikes().addAll(likesMap.get(filmId));
-            }
             if (genresMap.containsKey(filmId)) {
                 List<Genre> genres = genresMap.get(filmId);
                 genres.sort(Comparator.comparingInt(Genre::getId));
@@ -234,20 +230,17 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     private boolean filmValid(Film film) {
-        if (film.getGenres() == null) {
-            throw new InvalidInfoException("genres are invalid");
-        }
         String queryGetAllMpa = """
                 SELECT rating_id
                 FROM mpa_rating;
                 """;
-        List<Integer> existingRatings = jdbc.query(queryGetAllMpa, (rs, rowNum) -> rs.getInt("rating_id"));
-
         String queryGetAllGenres = """
                 SELECT genre_id
                 FROM genre;
                 """;
+        List<Integer> existingRatings = jdbc.query(queryGetAllMpa, (rs, rowNum) -> rs.getInt("rating_id"));
         List<Integer> existingGenres = jdbc.query(queryGetAllGenres, (rs, rowNum) -> rs.getInt("genre_id"));
+
         return existingRatings.contains(film.getMpa().getId())
                 && new HashSet<>(existingGenres).containsAll(film.getGenres().stream().map(Genre::getId).toList());
     }

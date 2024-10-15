@@ -22,7 +22,7 @@ public class DbUserStorage implements UserStorage {
     private final UserMapper mapper;
 
     @Override
-    public Collection<User> getAll() {
+    public Collection<User> getAllUsers() {
         String query = """
                 SELECT * FROM users;
                 """;
@@ -32,7 +32,7 @@ public class DbUserStorage implements UserStorage {
     }
 
     @Override
-    public User get(Integer userId) {
+    public User getUser(Integer userId) {
         userExists(userId);
         String getUserQuery = """
                 SELECT *
@@ -40,21 +40,13 @@ public class DbUserStorage implements UserStorage {
                 WHERE user_id = ?;
                 """;
         User user = jdbc.queryForObject(getUserQuery, mapper, userId);
-        String geFriendsIdListQuery = """
-                SELECT following_user_id
-                FROM friendship
-                WHERE followed_user_id = ? /*AND friendship_status = TRUE*/;
-                """;
-        Set<Integer> friendsIds = new HashSet<>(jdbc.queryForList(geFriendsIdListQuery, new Object[]{userId}, Integer.class));
-        if (user != null) {
-            user.getFriends().addAll(friendsIds);
-        }
+
         log.info("get /users/{} handled", userId);
         return user;
     }
 
     @Override
-    public User add(User user) {
+    public User addUser(User user) {
         user.setName(getDisplayedName(user));
         String addUserQuery = """
                 INSERT INTO users (email, login, name, birthday)
@@ -70,25 +62,28 @@ public class DbUserStorage implements UserStorage {
             return ps;
         }, keyHolder);
         user.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+
         log.info("User {} is created", user.getLogin());
         return user;
     }
 
     @Override
-    public User update(User updUser) {
+    public User updateUser(User updUser) {
         userExists(updUser.getId());
         String query = """
                 UPDATE users
                 SET email = ?, login = ?, name = ?, birthday = ?
                 WHERE user_id = ?;
                 """;
-        jdbc.update(query, updUser.getEmail(), updUser.getLogin(), updUser.getName(), Date.valueOf(updUser.getBirthday()), updUser.getId());
+        jdbc.update(query, updUser.getEmail(), updUser.getLogin(),
+                updUser.getName(), Date.valueOf(updUser.getBirthday()), updUser.getId());
+
         log.info("User {} is updated: {}", updUser.getLogin(), updUser);
         return updUser;
     }
 
     @Override
-    public void remove(Integer userId) {
+    public void removeUser(Integer userId) {
         userExists(userId);
         String removeUserQuery = """
                 DELETE FROM users
@@ -112,11 +107,6 @@ public class DbUserStorage implements UserStorage {
             Integer followedUserId = rs.getInt("followed_user_id");
             Integer followingUserId = rs.getInt("following_user_id");
             likedFilms.computeIfAbsent(followedUserId, k -> new HashSet<>()).add(followingUserId);
-        });
-        usersWithoutFriends.forEach(u -> {
-            if (likedFilms.containsKey(u.getId())) {
-                u.getLikedFilms().addAll(likedFilms.get(u.getId()));
-            }
         });
         return usersWithoutFriends;
     }

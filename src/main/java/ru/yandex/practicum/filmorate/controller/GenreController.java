@@ -19,7 +19,7 @@ public class GenreController {
     private final GenreService genreService;
 
     @GetMapping
-    public Collection<Genre> getAll() {
+    public Collection<Genre> getAllGenres() {
         log.info("GET /genres is accessed");
         return genreService.getAllGenres();
     }

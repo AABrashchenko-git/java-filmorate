@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
@@ -16,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.DbFilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmMapper;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.DbGenreStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -26,11 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
 @JdbcTest
 @AutoConfigureTestDatabase
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({DbFilmStorage.class, FilmMapper.class})
+@Import({DbFilmStorage.class, DbGenreStorage.class, FilmMapper.class})
 public class DbFilmStorageTest {
 
     private final FilmStorage filmStorage;
@@ -38,7 +37,7 @@ public class DbFilmStorageTest {
     private Film film2;
 
     @Autowired
-    public DbFilmStorageTest(@Qualifier("dbFilmStorage") FilmStorage filmStorage) {
+    public DbFilmStorageTest(FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
 
@@ -69,14 +68,14 @@ public class DbFilmStorageTest {
         film1.getGenres().addAll(testGenres1);
         film2.getGenres().addAll(testGenres2);
 
-        filmStorage.add(film1);
-        filmStorage.add(film2);
+        filmStorage.addFilm(film1);
+        filmStorage.addFilm(film2);
     }
 
     @Test
     void testGetFilmById() {
-        Film receivedFilm1 = filmStorage.get(1);
-        Film receivedFilm2 = filmStorage.get(2);
+        Film receivedFilm1 = filmStorage.getFilm(1);
+        Film receivedFilm2 = filmStorage.getFilm(2);
         assertThat(receivedFilm1).isNotNull();
         assertThat(receivedFilm1.getId()).isEqualTo(1);
         Assertions.assertEquals(film2, receivedFilm2);
@@ -84,7 +83,7 @@ public class DbFilmStorageTest {
 
     @Test
     void testGetAllFilms() {
-        Collection<Film> films = filmStorage.getAll();
+        Collection<Film> films = filmStorage.getAllFilms();
         System.out.println(films);
         assertEquals(films.size(), 2);
         assertThat(films).hasSizeGreaterThan(0);
@@ -92,11 +91,11 @@ public class DbFilmStorageTest {
 
     @Test
     void testUpdateFilm() {
-        Film existingFilm = filmStorage.get(1);
+        Film existingFilm = filmStorage.getFilm(1);
         existingFilm.setName("Updated Film");
         existingFilm.setDescription("Updated Description");
 
-        Film updatedFilm = filmStorage.update(existingFilm);
+        Film updatedFilm = filmStorage.updateFilm(existingFilm);
         assertThat(updatedFilm).isNotNull();
         assertThat(updatedFilm.getName()).isEqualTo("Updated Film");
         assertThat(updatedFilm.getDescription()).isEqualTo("Updated Description");
@@ -104,8 +103,8 @@ public class DbFilmStorageTest {
 
     @Test
     void testRemoveFilm() {
-        filmStorage.remove(1);
-        assertThrows(NotFoundException.class, () -> filmStorage.get(1));
+        filmStorage.removeFilm(1);
+        assertThrows(NotFoundException.class, () -> filmStorage.getFilm(1));
     }
 
 }
