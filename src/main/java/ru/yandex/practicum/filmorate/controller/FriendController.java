@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FriendService;
@@ -11,24 +11,20 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping("/users/{id}/friends")
+@RequiredArgsConstructor
 public class FriendController {
     private final FriendService friendService;
 
-    @Autowired
-    public FriendController(FriendService friendService) {
-        this.friendService = friendService;
-    }
-
     @PutMapping("/{friendId}")
-    public User addUserAsFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public void addUserAsFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         log.info("PUT /users/{}/friends/{} is accessed", id, friendId);
-        return friendService.addUserAsFriend(id, friendId);
+        friendService.addUserAsFriend(id, friendId);
     }
 
     @DeleteMapping("/{friendId}")
-    public User removeUserFromFriendsList(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public void removeUserFromFriendsList(@PathVariable Integer id, @PathVariable Integer friendId) {
         log.info("DELETE /users/{}/friends/{} is accessed", id, friendId);
-        return friendService.removeUserFromFriendsList(id, friendId);
+        friendService.removeUserFromFriendsList(id, friendId);
     }
 
     @GetMapping
